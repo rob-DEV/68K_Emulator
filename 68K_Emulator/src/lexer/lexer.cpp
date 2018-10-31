@@ -1,11 +1,13 @@
 #include "lexer.h"
 #include <console.h>
+#include <algorithm>
 
 Lexer::Lexer(std::string fileSrc) {
 
 	std::string::size_type pos = 0;
 	std::string::size_type prev = 0;
 	uint32_t count = 1;
+
 	while ((pos = fileSrc.find('\n', prev)) != std::string::npos)
 	{
 		SourceLine tmpSrcLine;
@@ -68,6 +70,14 @@ Lexer::Lexer(std::string fileSrc) {
 	for (size_t i = startIndex; i <= endStartIndex; i++)
 		programSourceLines.push_back(m_AllSourceLines[i]);
 
+
+
+	//finally remove tabs \t from the instructions for easier parsing later
+	for (size_t i = 0; i < programSourceLines.size(); i++)
+	{
+
+		programSourceLines[i].line.erase(std::remove(programSourceLines[i].line.begin(), programSourceLines[i].line.end(), '\t'), programSourceLines[i].line.end());
+	}
 
 	m_ProgramSourceLines = programSourceLines;
 }

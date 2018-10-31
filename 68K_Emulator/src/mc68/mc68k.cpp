@@ -1,4 +1,6 @@
 #include "mc68k.h"
+#include "instruction_set.h"
+
 #include <console.h>
 #include <cstring>
 
@@ -68,9 +70,54 @@ void MC68K::execute()
 	//memory is not available as there is no memory map, hence data can only be stored and manipulated in the registers
 
 	//we avoid the START and END START labels
+	std::string delimiter = " ";
 	for (size_t i = 1; i < m_loadedProgramInstructions.size() -1; i++)
 	{
-		CONSOLE.writeLine(m_loadedProgramInstructions[i].line);
+		std::string raw_instruction = m_loadedProgramInstructions[i].line;
+		CONSOLE.writeLine(raw_instruction);
+
+		//first get each instrucation type and then execute it appropriately
+		
+		std::string operation = raw_instruction.substr(0, raw_instruction.find(" "));
+
+		//instruction parsing
+		//the parsing is very strict
+		if (operation == MOVE_W) {
+
+			short dataToMove = 0;
+
+			//pattern MOVE.W src/data, DEST
+			//pattern MOVE.W oper1, oper2
+			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1)- raw_instruction.find(" "));
+
+			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
+			std::string::size_type sz;
+			
+			if (oper1.find("#") != std::string::npos)
+			{
+				//literal value
+				std::string oper1ValStr = oper1.substr(1);
+				dataToMove = std::stoi(oper1ValStr, &sz);
+			}
+
+			if (oper2 == "D0")
+				m_RegD0 = dataToMove;
+			if (oper2 == "D1")
+				m_RegD1 = dataToMove;
+			if (oper2 == "D2")
+				m_RegD2 = dataToMove;
+			if (oper2 == "D3")
+				m_RegD3 = dataToMove;
+			if (oper2 == "D4")
+				m_RegD4 = dataToMove;
+			if (oper2 == "D5")
+				m_RegD5 = dataToMove;
+			if (oper2 == "D6")
+				m_RegD6 = dataToMove;
+			if (oper2 == "D7")
+				m_RegD7 = dataToMove;
+		}
+
 	}
 
 
