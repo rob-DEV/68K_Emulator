@@ -5,5 +5,50 @@ START:
 	MOVE.W $500, D4
 	ADD.W #1, D1
 	ADD.W #89, D1
-
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #1, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
+	ADD.W #89, D1
 	END    START
