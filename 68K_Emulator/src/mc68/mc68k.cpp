@@ -163,7 +163,7 @@ void MC68K::execute()
 	for (size_t i = 1; i < m_loadedProgramInstructions.size() -1; i++)
 	{
 		std::string raw_instruction = m_loadedProgramInstructions[i].line;
-		CONSOLE.writeLine(raw_instruction);
+		//CONSOLE.writeLine(raw_instruction);
 
 		//first get each instrucation type and then execute it appropriately
 		
