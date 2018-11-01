@@ -245,7 +245,8 @@ void MC68K::execute()
 
 			updateRegister(oper2, REG_OPER::SET, data);
 		}
-		else if (operation == ADD_B) {
+		//NOTE THIS CAN HANDLE ADD AND SUB AS SUB IS JUST MINUS ADDITION
+		else if (operation == ADD_B || operation == SUB_B) {
 
 			char data = 0;
 
@@ -259,9 +260,15 @@ void MC68K::execute()
 			if (oper1.find("#") != std::string::npos)
 				data = (char)parseLiteralValue(oper1);
 
+
+			//check if operation is SUB
+			//if so change oper 2 to negative
+			if (operation == SUB_B)
+				data = -data;
+
 			updateRegister(oper2, REG_OPER::ADD, data);
 		}
-		else if (operation == ADD_W) {
+		else if (operation == ADD_W || operation == SUB_W) {
 
 			short data = 0;
 
@@ -275,9 +282,12 @@ void MC68K::execute()
 			if (oper1.find("#") != std::string::npos)
 				data = (short)parseLiteralValue(oper1);
 
+			if (operation == SUB_W)
+				data = -data;
+
 			updateRegister(oper2, REG_OPER::ADD, data);
 		}
-		else if (operation == ADD_W) {
+		else if (operation == ADD_L || operation == SUB_L) {
 
 			int data = 0;
 
@@ -290,6 +300,9 @@ void MC68K::execute()
 
 			if (oper1.find("#") != std::string::npos)
 				data = (int)parseLiteralValue(oper1);
+
+			if (operation == SUB_L)
+				data = -data;
 
 			updateRegister(oper2, REG_OPER::ADD, data);
 		}
