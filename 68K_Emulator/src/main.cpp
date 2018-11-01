@@ -20,9 +20,10 @@ int main(int argc, const char** argv)
 	MC68K* mc68K = new MC68K();
 	//eventually load the compiled program into the emulator
 	mc68K->load(lexer->m_ProgramSourceLines);
-
+	
 	mc68K->execute();
 
+	mc68K->dumpRegisters();
 
 	CONSOLE.readLine();
 }

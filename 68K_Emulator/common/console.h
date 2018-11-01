@@ -75,6 +75,24 @@ public:
 		delete[] sMessage;
 	}
 
+	inline void write(const char* format, ...)
+	{
+		char* sMessage = NULL;
+		int nLength = 0;
+		va_list args;
+		va_start(args, format);
+		//  Return the number of characters in the string referenced the list of arguments.
+		// _vscprintf doesn't count terminating '\0' (that's why +1)
+		nLength = _vscprintf(format, args) + 1;
+		sMessage = new char[nLength];
+		vsprintf_s(sMessage, nLength, format, args);
+		//vsprintf(sMessage, format, args);
+		std::cout << sMessage;
+		va_end(args);
+
+		delete[] sMessage;
+	}
+
 	inline std::string readLine()
 	{
 		std::string str;

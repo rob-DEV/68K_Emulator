@@ -1,10 +1,12 @@
 #pragma once
 #include "../common/structures.h"
+#include <console.h>
 #include <vector>
 #include <string>
 
 #define MEMORY_SIZE 16 * 1024 * 1024
 
+enum REG_OPER{ ADD, SUB, SET };
 class MC68K
 {
 private:
@@ -12,10 +14,9 @@ private:
 	std::vector<SourceLine> m_loadedProgramInstructions;
 	void init();
 
-	//basic routines
-	void move();
-	void add();
-
+	void updateRegister(const std::string& reg, REG_OPER oper, unsigned int value);
+	void readFromMemory(unsigned int address, void* buffer, unsigned int size);
+	void writeToMemory(unsigned int address, unsigned int size, const std::string& reg);
 
 public:
 	MC68K();
@@ -23,6 +24,9 @@ public:
 
 	void load(std::vector<SourceLine> lexedProgram);
 	void execute();
+
+	void dumpRegisters();
+
 	int m_RegD0;
 	int m_RegD1;
 	int m_RegD2;
@@ -42,5 +46,6 @@ public:
 	int m_RegA7;
 
 	char* m_Memory;
+
 };
 

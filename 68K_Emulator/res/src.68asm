@@ -1,6 +1,9 @@
 	ORG    $1000
 START:
-	MOVE.W #49, D1
+	MOVE.W #67, D7
+	MOVE.W D7, $500
+	MOVE.W $500, D4
 	ADD.W #1, D1
+	ADD.W #89, D1
 
 	END    START

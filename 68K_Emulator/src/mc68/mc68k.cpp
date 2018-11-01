@@ -1,8 +1,9 @@
 #include "mc68k.h"
-#include "instruction_set.h"
+#include "constants.h"
 
 #include <console.h>
 #include <cstring>
+#include <algorithm>
 
 
 MC68K::MC68K()
@@ -73,20 +74,92 @@ std::string parseCommandGetOperation(const std::string& raw_text_instruction)
 	return operation;
 }
 
+void MC68K::updateRegister(const std::string& reg, REG_OPER oper, unsigned int value)
+{
+	if (oper == REG_OPER::SET) {
+		if (reg == D0)
+			m_RegD0 = value;
+		else if (reg == D1)
+			m_RegD1 = value;
+		else if (reg == D2)
+			m_RegD2 = value;
+		else if (reg == D3)
+			m_RegD3 = value;
+		else if (reg == D4)
+			m_RegD4 = value;
+		else if (reg == D5)
+			m_RegD5 = value;
+		else if (reg == D6)
+			m_RegD6 = value;
+		else if (reg == D7)
+			m_RegD7 = value;
+	}
+	else if (oper == REG_OPER::ADD) {
+		if (reg == D0)
+			m_RegD0 += value;
+		else if (reg == D1)
+			m_RegD1 += value;
+		else if (reg == D2)
+			m_RegD2 += value;
+		else if (reg == D3)
+			m_RegD3 += value;
+		else if (reg == D4)
+			m_RegD4 += value;
+		else if (reg == D5)
+			m_RegD5 += value;
+		else if (reg == D6)
+			m_RegD6 += value;
+		else if (reg == D7)
+			m_RegD7 += value;
+	}
+}
+
+void MC68K::readFromMemory(unsigned int address, void* buffer, unsigned int size)
+{
+	memcpy(buffer, &m_Memory[address], size);
+}
+void MC68K::writeToMemory(unsigned int address, unsigned int size, const std::string& reg)
+{
+	if (address > MEMORY_SIZE - 1)
+		return;
+
+	int* regWithVal = NULL;
+
+	if (reg == D0)
+		regWithVal = &m_RegD0;
+	else if (reg == D1)
+		regWithVal = &m_RegD1;
+	else if (reg == D2)
+		regWithVal = &m_RegD2;
+	else if (reg == D3)
+		regWithVal = &m_RegD3;
+	else if (reg == D4)
+		regWithVal = &m_RegD4;
+	else if (reg == D5)
+		regWithVal = &m_RegD5;
+	else if (reg == D6)
+		regWithVal = &m_RegD6;
+	else if (reg == D7)
+		regWithVal = &m_RegD7;
+
+	void* baseAddress = &m_Memory[address];
+
+	memcpy(baseAddress, regWithVal, size);
+}
+
 void MC68K::execute()
 {
 	//this is an interpreted approach eventually this process will be done at compile time and then the raw
 	//opcodes will be passed to the mk68 emulator
 
-	if (m_loadedProgramInstructions.size() < 1)
-	{
+	if (m_loadedProgramInstructions.size() < 1) {
 		CONSOLE.writeLine("Error: No program has been loaded!");
+		return;
 	}
 	//there is no syntax check atm
 	//memory is not available as there is no memory map, hence data can only be stored and manipulated in the registers
 
 	//we avoid the START and END START labels
-	std::string delimiter = " ";
 	for (size_t i = 1; i < m_loadedProgramInstructions.size() -1; i++)
 	{
 		std::string raw_instruction = m_loadedProgramInstructions[i].line;
@@ -98,9 +171,24 @@ void MC68K::execute()
 
 		//instruction parsing
 		//the parsing is very strict
-		if (operation == MOVE_W) {
+		if (operation == MOVE_B) {
 
-			short dataToMove = 0;
+			char data = 0;
+
+			//pattern MOVE.W src/data, DEST
+			//pattern MOVE.W oper1, oper2
+			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1) - raw_instruction.find(" "));
+
+			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
+
+			if (oper1.find("#") != std::string::npos)
+				data = (char)parseLiteralValue(oper1);
+
+			updateRegister(oper2, REG_OPER::SET, data);
+		} 
+		else if (operation == MOVE_W) {
+
+			short data = 0;
 
 			//pattern MOVE.W src/data, DEST
 			//pattern MOVE.W oper1, oper2
@@ -109,30 +197,57 @@ void MC68K::execute()
 			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
 			
 			
-			if (oper1.find("#") != std::string::npos)
-				dataToMove = parseLiteralValue(oper1);
+			if (oper1.find("#") != std::string::npos) {
+				//not hex
+				if (oper1.find("$") == std::string::npos)
+					data = (short)parseLiteralValue(oper1);
+			}
+			else if (oper1.find("$") != std::string::npos) {
+				//not a literal value - instead read from a memory location
+				//convert the hex str to an int
+				std::string hexValStr = oper1.substr(oper1.find('$') + 1);
+				unsigned int x = std::stoul(hexValStr, nullptr, 16);
 
-			if (oper2 == "D0")
-				m_RegD0 = dataToMove;
-			if (oper2 == "D1")
-				m_RegD1 = dataToMove;
-			if (oper2 == "D2")
-				m_RegD2 = dataToMove;
-			if (oper2 == "D3")
-				m_RegD3 = dataToMove;
-			if (oper2 == "D4")
-				m_RegD4 = dataToMove;
-			if (oper2 == "D5")
-				m_RegD5 = dataToMove;
-			if (oper2 == "D6")
-				m_RegD6 = dataToMove;
-			if (oper2 == "D7")
-				m_RegD7 = dataToMove;
+			
+				
+				readFromMemory(x, &data, 2);
+			}
+			
+			if (oper2.find("$") != std::string::npos) {
+				//not a literal value - instead read from a memory location
+				//convert the hex str to an int
+				std::string hexValStr = oper2.substr(oper1.find('$') + 2);
+				unsigned int x = std::stoul(hexValStr, nullptr, 16);
+
+				writeToMemory(x, sizeof(short), oper1);
+			}
+			else {
+				//register assumed to be default THIS IS A HORRIBLE IDEA
+				updateRegister(oper2, REG_OPER::SET, data);
+			}
+
+			
 		}
+		else if (operation == MOVE_L) {
 
-		if (operation == ADD_W) {
+			int data = 0;
 
-			short dataToAdd = 0;
+			//pattern MOVE.W src/data, DEST
+			//pattern MOVE.W oper1, oper2
+			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1) - raw_instruction.find(" "));
+
+			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
+
+
+			if (oper1.find("#") != std::string::npos)
+				data = (int)parseLiteralValue(oper1);
+
+
+			updateRegister(oper2, REG_OPER::SET, data);
+		}
+		else if (operation == ADD_B) {
+
+			char data = 0;
 
 			//pattern ADD.W data, DEST
 			//pattern ADD.W oper1, oper2
@@ -142,27 +257,52 @@ void MC68K::execute()
 
 
 			if (oper1.find("#") != std::string::npos)
-				dataToAdd = parseLiteralValue(oper1);
+				data = (char)parseLiteralValue(oper1);
 
-			if (oper2 == "D0")
-				m_RegD0 += dataToAdd;
-			if (oper2 == "D1")
-				m_RegD1 += dataToAdd;
-			if (oper2 == "D2")
-				m_RegD2 += dataToAdd;
-			if (oper2 == "D3")
-				m_RegD3 += dataToAdd;
-			if (oper2 == "D4")
-				m_RegD4 += dataToAdd;
-			if (oper2 == "D5")
-				m_RegD5 += dataToAdd;
-			if (oper2 == "D6")
-				m_RegD6 += dataToAdd;
-			if (oper2 == "D7")
-				m_RegD7 += dataToAdd;
+			updateRegister(oper2, REG_OPER::ADD, data);
 		}
+		else if (operation == ADD_W) {
 
+			short data = 0;
+
+			//pattern ADD.W data, DEST
+			//pattern ADD.W oper1, oper2
+			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1) - raw_instruction.find(" "));
+
+			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
+
+
+			if (oper1.find("#") != std::string::npos)
+				data = (short)parseLiteralValue(oper1);
+
+			updateRegister(oper2, REG_OPER::ADD, data);
+		}
+		else if (operation == ADD_W) {
+
+			int data = 0;
+
+			//pattern ADD.W data, DEST
+			//pattern ADD.W oper1, oper2
+			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1) - raw_instruction.find(" "));
+
+			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
+
+
+			if (oper1.find("#") != std::string::npos)
+				data = (int)parseLiteralValue(oper1);
+
+			updateRegister(oper2, REG_OPER::ADD, data);
+		}
 	}
 
 
 }
+
+void MC68K::dumpRegisters()
+{
+	
+	CONSOLE.write("REGISTER DUMP\n-----------------------------------\nD0 = %d\nD1 = %d\nD2 = %d\nD3 = %d\nD4 = %d\nD5 = %d\nD6 = %d\nD7 = %d", m_RegD0, m_RegD1, m_RegD2, m_RegD3, m_RegD4, m_RegD5, m_RegD6, m_RegD7);
+	CONSOLE.write("\n-----------------------------------\nA0 = %d\nA1 = %d\nA2 = %d\nA3 = %d\nA4 = %d\nA5 = %d\nA6 = %d\nA7 = %d\n-----------------------------------\nREGISTER DUMP END\n", m_RegA0, m_RegA1, m_RegA2, m_RegA3, m_RegA4, m_RegA5, m_RegA6, m_RegA7);
+}
+
+

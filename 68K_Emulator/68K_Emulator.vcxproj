@@ -126,7 +126,7 @@
     <ClInclude Include="src\compiler\compiler.h" />
     <ClInclude Include="src\lexer\lexer.h" />
     <ClInclude Include="src\io\io.h" />
-    <ClInclude Include="src\mc68\instruction_set.h" />
+    <ClInclude Include="src\mc68\constants.h" />
     <ClInclude Include="src\mc68\mc68k.h" />
     <ClInclude Include="common\console.h" />
     <ClInclude Include="common\object.h" />
