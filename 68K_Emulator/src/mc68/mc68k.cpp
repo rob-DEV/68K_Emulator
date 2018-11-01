@@ -57,6 +57,22 @@ void MC68K::load(std::vector<SourceLine> lexedProgram)
 
 }
 
+int parseLiteralValue(const std::string& literalOperand)
+{
+	int result = 0;
+	std::string::size_type sz;
+	std::string oper1ValStr = literalOperand.substr(1);
+	result = std::stoi(oper1ValStr, &sz);
+	return result;
+
+}
+
+std::string parseCommandGetOperation(const std::string& raw_text_instruction)
+{
+	std::string operation = raw_text_instruction.substr(0, raw_text_instruction.find(" "));
+	return operation;
+}
+
 void MC68K::execute()
 {
 	//this is an interpreted approach eventually this process will be done at compile time and then the raw
@@ -78,7 +94,7 @@ void MC68K::execute()
 
 		//first get each instrucation type and then execute it appropriately
 		
-		std::string operation = raw_instruction.substr(0, raw_instruction.find(" "));
+		std::string operation = parseCommandGetOperation(raw_instruction);
 
 		//instruction parsing
 		//the parsing is very strict
@@ -91,14 +107,10 @@ void MC68K::execute()
 			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1)- raw_instruction.find(" "));
 
 			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
-			std::string::size_type sz;
+			
 			
 			if (oper1.find("#") != std::string::npos)
-			{
-				//literal value
-				std::string oper1ValStr = oper1.substr(1);
-				dataToMove = std::stoi(oper1ValStr, &sz);
-			}
+				dataToMove = parseLiteralValue(oper1);
 
 			if (oper2 == "D0")
 				m_RegD0 = dataToMove;
@@ -116,6 +128,38 @@ void MC68K::execute()
 				m_RegD6 = dataToMove;
 			if (oper2 == "D7")
 				m_RegD7 = dataToMove;
+		}
+
+		if (operation == ADD_W) {
+
+			short dataToAdd = 0;
+
+			//pattern ADD.W data, DEST
+			//pattern ADD.W oper1, oper2
+			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1) - raw_instruction.find(" "));
+
+			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
+
+
+			if (oper1.find("#") != std::string::npos)
+				dataToAdd = parseLiteralValue(oper1);
+
+			if (oper2 == "D0")
+				m_RegD0 += dataToAdd;
+			if (oper2 == "D1")
+				m_RegD1 += dataToAdd;
+			if (oper2 == "D2")
+				m_RegD2 += dataToAdd;
+			if (oper2 == "D3")
+				m_RegD3 += dataToAdd;
+			if (oper2 == "D4")
+				m_RegD4 += dataToAdd;
+			if (oper2 == "D5")
+				m_RegD5 += dataToAdd;
+			if (oper2 == "D6")
+				m_RegD6 += dataToAdd;
+			if (oper2 == "D7")
+				m_RegD7 += dataToAdd;
 		}
 
 	}

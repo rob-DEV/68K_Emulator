@@ -12,6 +12,11 @@ private:
 	std::vector<SourceLine> m_loadedProgramInstructions;
 	void init();
 
+	//basic routines
+	void move();
+	void add();
+
+
 public:
 	MC68K();
 	~MC68K();
