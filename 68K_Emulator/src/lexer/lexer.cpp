@@ -6,18 +6,24 @@ Lexer::Lexer(std::string fileSrc) {
 
 	std::string::size_type pos = 0;
 	std::string::size_type prev = 0;
-	uint32_t count = 1;
+	uint32_t count = 0;
 
 	while ((pos = fileSrc.find('\n', prev)) != std::string::npos)
 	{
+		std::string _line = fileSrc.substr(prev, pos - prev);
+		
+		bool whiteSpacesOnly = std::all_of(_line.begin(), _line.end(), isspace);
+		if (whiteSpacesOnly) {
+			prev = pos + 1;
+			continue;
+		}
 		SourceLine tmpSrcLine;
 		tmpSrcLine.lineNumber = count;
 		tmpSrcLine.line = fileSrc.substr(prev, pos - prev);
+		m_AllSourceLines.push_back(tmpSrcLine);
 		
-		if (tmpSrcLine.line != "")
-			m_AllSourceLines.push_back(tmpSrcLine);
-
 		prev = pos + 1;
+		
 		count++;
 	}
 

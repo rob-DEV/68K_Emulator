@@ -127,7 +127,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\common\structures.h" />
-    <ClInclude Include="src\compiler\compiler.h" />
     <ClInclude Include="src\lexer\lexer.h" />
     <ClInclude Include="src\io\io.h" />
     <ClInclude Include="src\mc68\constants.h" />
@@ -137,7 +136,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\console.cpp" />
-    <ClCompile Include="src\compiler\compiler.cpp" />
     <ClCompile Include="src\lexer\lexer.cpp" />
     <ClCompile Include="src\io\io.cpp" />
     <ClCompile Include="src\mc68\mc68k.cpp" />

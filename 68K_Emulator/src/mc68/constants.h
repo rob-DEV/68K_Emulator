@@ -1,5 +1,9 @@
 #pragma once
 
+//EXTENDED ASM MACROS
+
+#define SIMHALT "SIMHALT"
+
 //REGISTERS
 #define D0 "D0"
 #define D1 "D1"
@@ -31,3 +35,5 @@
 #define SUB_B "SUB.B"
 #define SUB_W "SUB.W"
 #define SUB_L "SUB.L"
+
+#define BRA "BRA"

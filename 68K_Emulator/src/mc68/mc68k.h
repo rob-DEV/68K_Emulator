@@ -15,15 +15,18 @@ private:
 	void init();
 
 	void updateRegister(const std::string& reg, REG_OPER oper, unsigned int value);
-	void readFromMemory(unsigned int address, void* buffer, unsigned int size);
+	void readFromMemory(unsigned int address, void* buffer, unsigned int size) const;
 	void writeToMemory(unsigned int address, unsigned int size, const std::string& reg);
 
+	unsigned int m_programCounter = 0;
+	unsigned int m_programCounterOverride = 0;
+	bool m_branchOverride = false;
 public:
 	MC68K();
 	~MC68K();
 
-	void load(std::vector<SourceLine> lexedProgram);
-	void execute();
+	void load(const std::vector<SourceLine>& lexedProgram);
+	int execute();
 
 	void dumpRegisters();
 

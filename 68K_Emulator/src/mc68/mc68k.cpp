@@ -44,7 +44,7 @@ MC68K::~MC68K()
 {
 }
 
-void MC68K::load(std::vector<SourceLine> lexedProgram)
+void MC68K::load(const std::vector<SourceLine>& lexedProgram)
 {
 	//there is no syntax check atm
 	if (m_loadedProgramInstructions.size() > 0)
@@ -114,10 +114,11 @@ void MC68K::updateRegister(const std::string& reg, REG_OPER oper, unsigned int v
 	}
 }
 
-void MC68K::readFromMemory(unsigned int address, void* buffer, unsigned int size)
+void MC68K::readFromMemory(unsigned int address, void* buffer, unsigned int size) const
 {
 	memcpy(buffer, &m_Memory[address], size);
 }
+
 void MC68K::writeToMemory(unsigned int address, unsigned int size, const std::string& reg)
 {
 	if (address > MEMORY_SIZE - 1)
@@ -147,22 +148,27 @@ void MC68K::writeToMemory(unsigned int address, unsigned int size, const std::st
 	memcpy(baseAddress, regWithVal, size);
 }
 
-void MC68K::execute()
+int MC68K::execute()
 {
 	//this is an interpreted approach eventually this process will be done at compile time and then the raw
 	//opcodes will be passed to the mk68 emulator
 
-	if (m_loadedProgramInstructions.size() < 1) {
+	if (m_loadedProgramInstructions.size() < 1) 
+	{
 		CONSOLE.writeLine("Error: No program has been loaded!");
-		return;
+		return -1;
 	}
 	//there is no syntax check atm
 	//memory is not available as there is no memory map, hence data can only be stored and manipulated in the registers
 
 	//we avoid the START and END START labels
-	for (size_t i = 1; i < m_loadedProgramInstructions.size() -1; i++)
+	while(true)
 	{
-		std::string raw_instruction = m_loadedProgramInstructions[i].line;
+		//end of execution
+		if (m_programCounter > m_loadedProgramInstructions.size())
+			break;
+
+		std::string raw_instruction = m_loadedProgramInstructions[m_programCounter].line;
 		//CONSOLE.writeLine(raw_instruction);
 
 		//first get each instrucation type and then execute it appropriately
@@ -171,7 +177,8 @@ void MC68K::execute()
 
 		//instruction parsing
 		//the parsing is very strict
-		if (operation == MOVE_B) {
+		if (operation == MOVE_B) 
+		{
 
 			char data = 0;
 
@@ -186,7 +193,8 @@ void MC68K::execute()
 
 			updateRegister(oper2, REG_OPER::SET, data);
 		} 
-		else if (operation == MOVE_W) {
+		else if (operation == MOVE_W)
+		{
 
 			short data = 0;
 
@@ -228,7 +236,8 @@ void MC68K::execute()
 
 			
 		}
-		else if (operation == MOVE_L) {
+		else if (operation == MOVE_L)
+		{
 
 			int data = 0;
 
@@ -246,7 +255,8 @@ void MC68K::execute()
 			updateRegister(oper2, REG_OPER::SET, data);
 		}
 		//NOTE THIS CAN HANDLE ADD AND SUB AS SUB IS JUST MINUS ADDITION
-		else if (operation == ADD_B || operation == SUB_B) {
+		else if (operation == ADD_B || operation == SUB_B)
+		{
 
 			char data = 0;
 
@@ -268,7 +278,8 @@ void MC68K::execute()
 
 			updateRegister(oper2, REG_OPER::ADD, data);
 		}
-		else if (operation == ADD_W || operation == SUB_W) {
+		else if (operation == ADD_W || operation == SUB_W) 
+		{
 
 			short data = 0;
 
@@ -287,7 +298,8 @@ void MC68K::execute()
 
 			updateRegister(oper2, REG_OPER::ADD, data);
 		}
-		else if (operation == ADD_L || operation == SUB_L) {
+		else if (operation == ADD_L || operation == SUB_L)
+		{
 
 			int data = 0;
 
@@ -306,6 +318,37 @@ void MC68K::execute()
 
 			updateRegister(oper2, REG_OPER::ADD, data);
 		}
+		else if (operation == BRA)
+		{
+			//get label find it in the program code then JMP to that line
+			std::string branchLabel = raw_instruction.substr(raw_instruction.find(' ') + 1);
+
+			//find where the label exists in the code and set the program counter to that instruction
+			bool labelFound = false;
+			for (size_t i = 0; i < m_loadedProgramInstructions.size(); i++)
+			{
+				if ((m_loadedProgramInstructions[i].line.find("BRA") == std::string::npos) && m_loadedProgramInstructions[i].line.find(branchLabel) != std::string::npos)
+				{
+					m_programCounter = m_loadedProgramInstructions[i].lineNumber;
+					labelFound = true;
+					break;
+				}
+			}
+			//matching BRA label not found exit -1
+			if (!labelFound) 
+			{
+				CONSOLE.writeLine("ERROR: Label %s not found exiting\n", branchLabel.c_str());
+				return -1;
+			}
+			
+		}
+		else if (operation == SIMHALT)
+		{
+			return 0;
+		}
+
+		//increment the program counter
+		++m_programCounter;
 	}
 
 
@@ -317,5 +360,3 @@ void MC68K::dumpRegisters()
 	CONSOLE.write("REGISTER DUMP\n-----------------------------------\nD0 = %d\nD1 = %d\nD2 = %d\nD3 = %d\nD4 = %d\nD5 = %d\nD6 = %d\nD7 = %d", m_RegD0, m_RegD1, m_RegD2, m_RegD3, m_RegD4, m_RegD5, m_RegD6, m_RegD7);
 	CONSOLE.write("\n-----------------------------------\nA0 = %d\nA1 = %d\nA2 = %d\nA3 = %d\nA4 = %d\nA5 = %d\nA6 = %d\nA7 = %d\n-----------------------------------\nREGISTER DUMP END\n", m_RegA0, m_RegA1, m_RegA2, m_RegA3, m_RegA4, m_RegA5, m_RegA6, m_RegA7);
 }
-
-
