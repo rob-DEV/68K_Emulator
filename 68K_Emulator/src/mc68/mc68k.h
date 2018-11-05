@@ -6,7 +6,8 @@
 
 #define MEMORY_SIZE 16 * 1024 * 1024
 
-enum REG_OPER{ ADD, SUB, SET };
+enum REG_OPER{ _ADD, _SUB, _SET };
+
 class MC68K
 {
 private:
@@ -19,8 +20,7 @@ private:
 	void writeToMemory(unsigned int address, unsigned int size, const std::string& reg);
 
 	unsigned int m_programCounter = 0;
-	unsigned int m_programCounterOverride = 0;
-	bool m_branchOverride = false;
+
 public:
 	MC68K();
 	~MC68K();

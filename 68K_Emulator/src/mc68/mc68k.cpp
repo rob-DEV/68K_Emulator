@@ -2,7 +2,6 @@
 #include "constants.h"
 
 #include <console.h>
-#include <cstring>
 #include <algorithm>
 
 
@@ -42,6 +41,7 @@ void MC68K::init()
 
 MC68K::~MC68K()
 {
+
 }
 
 void MC68K::load(const std::vector<SourceLine>& lexedProgram)
@@ -50,6 +50,8 @@ void MC68K::load(const std::vector<SourceLine>& lexedProgram)
 	if (m_loadedProgramInstructions.size() > 0)
 	{
 		//existing program terminate and reset
+		CONSOLE.writeLine("ERROR: No program has been loaded!");
+		return;
 	}
 
 	//dodgy reset atm
@@ -76,7 +78,7 @@ std::string parseCommandGetOperation(const std::string& raw_text_instruction)
 
 void MC68K::updateRegister(const std::string& reg, REG_OPER oper, unsigned int value)
 {
-	if (oper == REG_OPER::SET) {
+	if (oper == REG_OPER::_SET) {
 		if (reg == D0)
 			m_RegD0 = value;
 		else if (reg == D1)
@@ -94,7 +96,7 @@ void MC68K::updateRegister(const std::string& reg, REG_OPER oper, unsigned int v
 		else if (reg == D7)
 			m_RegD7 = value;
 	}
-	else if (oper == REG_OPER::ADD) {
+	else if (oper == REG_OPER::_ADD) {
 		if (reg == D0)
 			m_RegD0 += value;
 		else if (reg == D1)
@@ -174,13 +176,25 @@ int MC68K::execute()
 		//first get each instrucation type and then execute it appropriately
 		
 		std::string operation = parseCommandGetOperation(raw_instruction);
-
+		std::string operation_size;
+		try {
+			operation_size = operation.substr(raw_instruction.find(".")+1);
+		}
+		catch(const std::exception& ex)
+		{};
 		//instruction parsing
 		//the parsing is very strict
-		if (operation == MOVE_B) 
+		if (operation.find(MOVE) != std::string::npos)
 		{
+			int data = 0;
 
-			char data = 0;
+			if (operation_size == BYTE)
+				data = (char)data;
+			if (operation_size == WORD)
+				data = (short)data;
+			if (operation_size == LONG)
+				data = (int)data;
+			
 
 			//pattern MOVE.W src/data, DEST
 			//pattern MOVE.W oper1, oper2
@@ -188,23 +202,7 @@ int MC68K::execute()
 
 			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
 
-			if (oper1.find("#") != std::string::npos)
-				data = (char)parseLiteralValue(oper1);
 
-			updateRegister(oper2, REG_OPER::SET, data);
-		} 
-		else if (operation == MOVE_W)
-		{
-
-			short data = 0;
-
-			//pattern MOVE.W src/data, DEST
-			//pattern MOVE.W oper1, oper2
-			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1)- raw_instruction.find(" "));
-
-			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
-			
-			
 			if (oper1.find("#") != std::string::npos) {
 				//not hex
 				if (oper1.find("$") == std::string::npos)
@@ -216,11 +214,11 @@ int MC68K::execute()
 				std::string hexValStr = oper1.substr(oper1.find('$') + 1);
 				unsigned int x = std::stoul(hexValStr, nullptr, 16);
 
-			
-				
+
+
 				readFromMemory(x, &data, 2);
 			}
-			
+
 			if (oper2.find("$") != std::string::npos) {
 				//not a literal value - instead read from a memory location
 				//convert the hex str to an int
@@ -231,31 +229,11 @@ int MC68K::execute()
 			}
 			else {
 				//register assumed to be default THIS IS A HORRIBLE IDEA
-				updateRegister(oper2, REG_OPER::SET, data);
+				updateRegister(oper2, REG_OPER::_SET, data);
 			}
-
-			
-		}
-		else if (operation == MOVE_L)
-		{
-
-			int data = 0;
-
-			//pattern MOVE.W src/data, DEST
-			//pattern MOVE.W oper1, oper2
-			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1) - raw_instruction.find(" "));
-
-			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
-
-
-			if (oper1.find("#") != std::string::npos)
-				data = (int)parseLiteralValue(oper1);
-
-
-			updateRegister(oper2, REG_OPER::SET, data);
 		}
 		//NOTE THIS CAN HANDLE ADD AND SUB AS SUB IS JUST MINUS ADDITION
-		else if (operation == ADD_B || operation == SUB_B)
+		else if (operation.find(ADD) != std::string::npos || operation.find(SUB) != std::string::npos)
 		{
 
 			char data = 0;
@@ -273,52 +251,19 @@ int MC68K::execute()
 
 			//check if operation is SUB
 			//if so change oper 2 to negative
-			if (operation == SUB_B)
+			if (operation.find(SUB) != std::string::npos)
 				data = -data;
 
-			updateRegister(oper2, REG_OPER::ADD, data);
+			if (operation_size == BYTE)
+				data = (char)data;
+			if (operation_size == WORD)
+				data = (short)data;
+			if (operation_size == LONG)
+				data = (int)data;
+
+			updateRegister(oper2, REG_OPER::_ADD, data);
 		}
-		else if (operation == ADD_W || operation == SUB_W) 
-		{
-
-			short data = 0;
-
-			//pattern ADD.W data, DEST
-			//pattern ADD.W oper1, oper2
-			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1) - raw_instruction.find(" "));
-
-			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
-
-
-			if (oper1.find("#") != std::string::npos)
-				data = (short)parseLiteralValue(oper1);
-
-			if (operation == SUB_W)
-				data = -data;
-
-			updateRegister(oper2, REG_OPER::ADD, data);
-		}
-		else if (operation == ADD_L || operation == SUB_L)
-		{
-
-			int data = 0;
-
-			//pattern ADD.W data, DEST
-			//pattern ADD.W oper1, oper2
-			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1, (raw_instruction.find(',') - 1) - raw_instruction.find(" "));
-
-			std::string oper2 = raw_instruction.substr(raw_instruction.find(',') + 2);
-
-
-			if (oper1.find("#") != std::string::npos)
-				data = (int)parseLiteralValue(oper1);
-
-			if (operation == SUB_L)
-				data = -data;
-
-			updateRegister(oper2, REG_OPER::ADD, data);
-		}
-		else if (operation == BRA)
+		else if (operation.find(BRA) != std::string::npos)
 		{
 			//get label find it in the program code then JMP to that line
 			std::string branchLabel = raw_instruction.substr(raw_instruction.find(' ') + 1);
@@ -340,7 +285,6 @@ int MC68K::execute()
 				CONSOLE.writeLine("ERROR: Label %s not found exiting\n", branchLabel.c_str());
 				return -1;
 			}
-			
 		}
 		else if (operation == SIMHALT)
 		{

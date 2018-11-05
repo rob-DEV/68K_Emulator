@@ -2,14 +2,9 @@
 #define _OBJECT_H
 
 #include <iostream>
-#include <memory>
-#include <string>
-#include <cstdarg>
-#include <typeinfo>
 
 class object {
 public:
-
 	object()
 	{
 
@@ -30,7 +25,5 @@ public:
 		stream << object.toString();
 		return stream;
 	}
-
-
 };
 #endif // _OBECT_H

@@ -1,12 +1,18 @@
 #include <ctime>
 #include <console.h>
 #include <object.h>
-
-
+#include <chrono>
+#include <thread>
 #include "io/io.h"
 #include "mc68/mc68k.h"
 #include "lexer/lexer.h"
 
+using Clock = std::chrono::steady_clock;
+using std::chrono::time_point;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
+using namespace std::literals::chrono_literals;
+using std::this_thread::sleep_for;
 
 int main(int argc, const char** argv)
 {
@@ -19,16 +25,16 @@ int main(int argc, const char** argv)
 	//eventually load the compiled program into the emulator
 	mc68K->load(lexer->m_ProgramSourceLines);
 	
-	clock_t begin = clock();
-
+	time_point<Clock> start = Clock::now();
+	
 	int exitCode = mc68K->execute();
 
-	clock_t end = clock();
-	double elapsed_milli_secs = double(end - begin) / CLOCKS_PER_SEC * 1000;
+	time_point<Clock> end = Clock::now();
+	milliseconds diff = duration_cast<milliseconds>(end - start);
 
 	mc68K->dumpRegisters();
 
-	CONSOLE.writeLine("Exe time: %.5f", elapsed_milli_secs);
+	CONSOLE.writeLine("Execution time: %dms", diff.count());
 	CONSOLE.writeLine("Exit Code: %d", exitCode);
 
 	CONSOLE.readLine();

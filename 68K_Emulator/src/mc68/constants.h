@@ -1,7 +1,6 @@
 #pragma once
 
-//EXTENDED ASM MACROS
-
+//EXTENDED ASM MACROs
 #define SIMHALT "SIMHALT"
 
 //REGISTERS
@@ -23,17 +22,12 @@
 #define A6 "A6"
 #define A7 "A7"
 
-#define MOVE_B "MOVE.B"
-#define MOVE_W "MOVE.W"
-#define MOVE_L "MOVE.L"
+#define BYTE "B"
+#define WORD "W"
+#define LONG "L"
 
-
-#define ADD_B "ADD.B"
-#define ADD_W "ADD.W"
-#define ADD_L "ADD.L"
-
-#define SUB_B "SUB.B"
-#define SUB_W "SUB.W"
-#define SUB_L "SUB.L"
+#define MOVE "MOVE"
+#define ADD "ADD"
+#define SUB "SUB"
 
 #define BRA "BRA"
