@@ -13,9 +13,8 @@ class MC68K
 private:
 
 	std::vector<SourceLine> m_loadedProgramInstructions;
-	void init();
 
-	void updateRegister(const std::string& reg, REG_OPER oper, unsigned int value);
+	void updateRegister(const std::string& reg, REG_OPER oper, int value);
 	void readFromMemory(unsigned int address, void* buffer, unsigned int size) const;
 	void writeToMemory(unsigned int address, unsigned int size, const std::string& reg);
 
@@ -47,6 +46,12 @@ public:
 	int m_RegA5;
 	int m_RegA6;
 	int m_RegA7;
+
+	int m_X = 0;
+	int m_Z = 0;
+	int m_N = 0;
+	int m_V = 0;
+	int m_C = 0;
 
 	char* m_Memory;
 

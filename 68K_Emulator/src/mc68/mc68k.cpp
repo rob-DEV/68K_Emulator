@@ -1,16 +1,10 @@
 #include "mc68k.h"
 #include "constants.h"
-
 #include <console.h>
 #include <algorithm>
 
 
 MC68K::MC68K()
-{
-	init();
-}
-
-void MC68K::init()
 {
 	//data registers
 	m_RegD0 = 0;
@@ -37,11 +31,13 @@ void MC68K::init()
 
 	//set each byte to FF (255)
 	std::memset(m_Memory, 255, MEMORY_SIZE);
+
+
 }
 
 MC68K::~MC68K()
 {
-
+	delete[] m_Memory;
 }
 
 void MC68K::load(const std::vector<SourceLine>& lexedProgram)
@@ -76,7 +72,7 @@ std::string parseCommandGetOperation(const std::string& raw_text_instruction)
 	return operation;
 }
 
-void MC68K::updateRegister(const std::string& reg, REG_OPER oper, unsigned int value)
+void MC68K::updateRegister(const std::string& reg, REG_OPER oper, int value)
 {
 	if (oper == REG_OPER::_SET) {
 		if (reg == D0)
@@ -95,6 +91,12 @@ void MC68K::updateRegister(const std::string& reg, REG_OPER oper, unsigned int v
 			m_RegD6 = value;
 		else if (reg == D7)
 			m_RegD7 = value;
+
+		//set CCR
+		if (value < 0)
+			m_N = 1;
+		else
+			m_N = 0;
 	}
 	else if (oper == REG_OPER::_ADD) {
 		if (reg == D0)
@@ -184,8 +186,7 @@ int MC68K::execute()
 		{};
 		//instruction parsing
 		//the parsing is very strict
-		if (operation.find(MOVE) != std::string::npos)
-		{
+		if (operation.find(MOVE) != std::string::npos) {
 			int data = 0;
 
 			if (operation_size == BYTE)
@@ -214,8 +215,6 @@ int MC68K::execute()
 				std::string hexValStr = oper1.substr(oper1.find('$') + 1);
 				unsigned int x = std::stoul(hexValStr, nullptr, 16);
 
-
-
 				readFromMemory(x, &data, 2);
 			}
 
@@ -233,8 +232,7 @@ int MC68K::execute()
 			}
 		}
 		//NOTE THIS CAN HANDLE ADD AND SUB AS SUB IS JUST MINUS ADDITION
-		else if (operation.find(ADD) != std::string::npos || operation.find(SUB) != std::string::npos)
-		{
+		else if (operation.find(ADD) != std::string::npos || operation.find(SUB) != std::string::npos) {
 
 			char data = 0;
 
@@ -263,8 +261,7 @@ int MC68K::execute()
 
 			updateRegister(oper2, REG_OPER::_ADD, data);
 		}
-		else if (operation.find(BRA) != std::string::npos)
-		{
+		else if (operation.find(BRA) != std::string::npos) {
 			//get label find it in the program code then JMP to that line
 			std::string branchLabel = raw_instruction.substr(raw_instruction.find(' ') + 1);
 
@@ -286,16 +283,21 @@ int MC68K::execute()
 				return -1;
 			}
 		}
-		else if (operation == SIMHALT)
-		{
+		else if (operation == TRAP) {
+			std::string oper1 = raw_instruction.substr(raw_instruction.find(' ') + 1);
+			int data = parseLiteralValue(oper1);
+
+			//exit routine
+			if (m_RegD0 == 9 && data == 15)
+				return 0;
+		}
+		else if (operation == SIMHALT) {
 			return 0;
 		}
 
 		//increment the program counter
 		++m_programCounter;
 	}
-
-
 }
 
 void MC68K::dumpRegisters()

@@ -2,6 +2,7 @@
 
 //EXTENDED ASM MACROs
 #define SIMHALT "SIMHALT"
+#define TRAP "TRAP"
 
 //REGISTERS
 #define D0 "D0"
