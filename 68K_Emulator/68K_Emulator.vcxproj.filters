@@ -61,6 +61,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="src\res\src.68asm" />
+    <Text Include="res\src.68asm" />
   </ItemGroup>
 </Project>

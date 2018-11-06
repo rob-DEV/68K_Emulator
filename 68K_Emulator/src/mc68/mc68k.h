@@ -1,8 +1,10 @@
 #pragma once
-#include "../common/structures.h"
 #include <console.h>
 #include <vector>
 #include <string>
+
+#include "../common/structures.h"
+#include "../io/memory_map_file.h"
 
 #define MEMORY_SIZE 16 * 1024 * 1024
 
@@ -19,6 +21,9 @@ private:
 	void writeToMemory(unsigned int address, unsigned int size, const std::string& reg);
 
 	unsigned int m_programCounter = 0;
+
+	//IO
+	MemoryMapFile* m_OutputTerminal;
 
 public:
 	MC68K();

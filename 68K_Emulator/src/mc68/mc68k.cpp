@@ -2,7 +2,7 @@
 #include "constants.h"
 #include <console.h>
 #include <algorithm>
-
+#include <thread>
 
 MC68K::MC68K()
 {
@@ -32,12 +32,14 @@ MC68K::MC68K()
 	//set each byte to FF (255)
 	std::memset(m_Memory, 255, MEMORY_SIZE);
 
-
+	m_OutputTerminal = new MemoryMapFile();
+	m_OutputTerminal->map();
 }
 
 MC68K::~MC68K()
 {
 	delete[] m_Memory;
+	delete m_OutputTerminal;
 }
 
 void MC68K::load(const std::vector<SourceLine>& lexedProgram)
@@ -172,8 +174,14 @@ int MC68K::execute()
 		if (m_programCounter > m_loadedProgramInstructions.size())
 			break;
 
+		//limit rate of execution for testing
+		std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
 		std::string raw_instruction = m_loadedProgramInstructions[m_programCounter].line;
-		//CONSOLE.writeLine(raw_instruction);
+		
+		//output to terminal test
+		m_OutputTerminal->pushStringToFile(std::string(raw_instruction + "\n").c_str());
+
 
 		//first get each instrucation type and then execute it appropriately
 		

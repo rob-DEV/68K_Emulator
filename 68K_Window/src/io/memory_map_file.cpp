@@ -57,7 +57,7 @@ void MemoryMapFile::map()
 
 }
 
-void MemoryMapFile::open()
+std::string MemoryMapFile::open()
 {
 	m_MapFile = OpenFileMapping(
 		FILE_MAP_ALL_ACCESS,   // read/write access
@@ -68,7 +68,7 @@ void MemoryMapFile::open()
 	{
 		_tprintf(TEXT("Could not open file mapping object (%d).\n"),
 			GetLastError());
-		return;
+		return std::string();
 	}
 
 	m_Buffer = (LPTSTR)MapViewOfFile(m_MapFile, // handle to map object
@@ -84,15 +84,13 @@ void MemoryMapFile::open()
 
 		CloseHandle(m_MapFile);
 
-		return;
+		return std::string();
 	}
-
-	printf("%s\n", m_Buffer);
-	//MessageBox(NULL, m_Buffer, TEXT("Process2"), MB_OK);
-
+	
+	std::string line(m_Buffer);
 	UnmapViewOfFile(m_Buffer);
-
 	CloseHandle(m_MapFile);
+	return line;
 }
 
 void MemoryMapFile::pushStringToFile(const char* str)

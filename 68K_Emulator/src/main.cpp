@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "io/io.h"
-#include "io/memory_map_file.h"
 #include "mc68/mc68k.h"
 #include "lexer/lexer.h"
 
@@ -20,20 +19,6 @@ using std::this_thread::sleep_for;
 
 int main(int argc, const char** argv)
 {
-	
-	MemoryMapFile s;
-	s.map();
-	
-	while (true)
-	{
-		auto t = std::time(nullptr);
-		auto tm = *std::localtime(&t);
-		std::ostringstream oss;
-		oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
-		std::string a(oss.str());
-
-		s.pushStringToFile(a.c_str());
-	}
 	
 	std::string inputASM = IO::readFile("res/src.68asm");
 	
