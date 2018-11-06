@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <string>
 
 #define MC68K_SHARED_MEMORY_OBJECT  "Global\\MC68K_POOL"
 #define BUFFER_SIZE 256
@@ -19,7 +20,7 @@ public:
 	static MemoryMapFile* getInstance();
 
 	void map();
-	void open();
+	std::string open();
 	void pushStringToFile(const char* str);
 	void close();
 

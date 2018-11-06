@@ -97,7 +97,7 @@ void MemoryMapFile::pushStringToFile(const char* str)
 {
 	if (m_MapFile && m_Buffer)
 	{
-		CopyMemory((PVOID)m_Buffer, "AIDS", (_tcslen("AIDS") * sizeof(TCHAR)));
+		CopyMemory((PVOID)m_Buffer, str, (_tcslen(str) * sizeof(TCHAR)));
 	}
 }
 

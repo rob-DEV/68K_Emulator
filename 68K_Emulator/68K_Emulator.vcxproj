@@ -146,8 +146,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\io\memory_map_file.h" />
     <ClInclude Include="src\common\structures.h" />
+    <ClInclude Include="src\io\memory_map_file.h" />
     <ClInclude Include="src\lexer\lexer.h" />
     <ClInclude Include="src\io\io.h" />
     <ClInclude Include="src\mc68\constants.h" />

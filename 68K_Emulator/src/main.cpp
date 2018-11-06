@@ -1,10 +1,6 @@
-#include <ctime>
 #include <console.h>
 #include <object.h>
 #include <chrono>
-#include <thread>
-#include <iomanip>
-#include <sstream>
 
 #include "io/io.h"
 #include "mc68/mc68k.h"
@@ -15,7 +11,6 @@ using std::chrono::time_point;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 using namespace std::literals::chrono_literals;
-using std::this_thread::sleep_for;
 
 int main(int argc, const char** argv)
 {
